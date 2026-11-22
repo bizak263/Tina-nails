@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tina Nails — запись</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;700&display=swap');
+
+  :root{
+    --pink:#ff4fa3; --pink-light:#ff8fc7; --pink-dark:#c2186b;
+    --bg:#0b0b0f; --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.09);
+    --text:#f6f2f5; --muted:rgba(246,242,245,.55);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:'Manrope',system-ui,sans-serif;
+    background:var(--bg); color:var(--text);
+    overflow:hidden;
+  }
+  .bg{
+    position:fixed; inset:-20%;
+    background:
+      radial-gradient(42% 34% at 20% 12%, rgba(255,79,163,.30), transparent 70%),
+      radial-gradient(46% 40% at 85% 30%, rgba(194,24,107,.28), transparent 70%),
+      radial-gradient(50% 44% at 50% 95%, rgba(255,143,199,.20), transparent 70%),
+      #0b0b0f;
+    filter:blur(2px);
+    animation:drift 14s ease-in-out infinite alternate;
+    z-index:0;
+  }
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(-4%,3%) scale(1.08)}}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.35;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:22px 22px;}
+
+  .app{
+    position:relative; z-index:2;
+    height:100%; max-width:480px; margin:0 auto;
+    display:flex; flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 16px);
+  }
+  .progress{height:4px;border-radius:99px;background:rgba(255,255,255,.10);overflow:hidden;margin-bottom:18px;flex:none}
+  .progress-bar{height:100%;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--pink-light));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  #screen{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  .logo{
+    font-family:'Unbounded',sans-serif;font-weight:800;font-size:26px;letter-spacing:.06em;
+    text-transform:uppercase;
+    background:linear-gradient(100deg,#fff 10%,var(--pink-light) 55%,var(--pink) 90%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .tagline{color:var(--muted);font-size:14px;margin-top:6px}
+
+  h2{font-family:'Unbounded',sans-serif;font-size:21px;font-weight:600;line-height:1.25;margin:18px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+
+  .promo{
+    display:flex;align-items:center;gap:10px;
+    background:linear-gradient(100deg,rgba(255,79,163,.22),rgba(255,143,199,.12));
+    border:1px solid rgba(255,79,163,.45);
+    border-radius:16px;padding:12px 14px;font-size:13.5px;line-height:1.45;
+    margin:14px 0 4px;
+  }
+  .promo b{font-family:'Unbounded',sans-serif;font-size:13px;letter-spacing:.04em}
+  .promo .heart{font-size:18px;filter:drop-shadow(0 0 8px rgba(255,79,163,.8))}
+
+  .cards{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+  .card{
+    position:relative;display:flex;align-items:center;gap:14px;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:18px;padding:16px;
+    cursor:pointer;transition:.22s;user-select:none;
+  }
+  .card:active{transform:scale(.97)}
+  .card .dot{
+    flex:none;width:22px;height:22px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.35);transition:.2s;
+  }
+  .card.checked{border-color:var(--pink);background:linear-gradient(100deg,rgba(255,79,163,.18),rgba(255,79,163,.06));box-shadow:0 0 0 1px var(--pink), 0 8px 30px rgba(255,79,163,.18)}
+  .card.checked .dot{border-color:var(--pink);background:radial-gradient(circle at 35% 35%, var(--pink-light), var(--pink))}
+  .card .t{font-weight:700;font-size:15.5px}
+  .card .d{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .card .p{margin-left:auto;font-family:'Unbounded',sans-serif;font-weight:600;font-size:14px;color:var(--pink-light);white-space:nowrap}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .grid .card{flex-direction:column;align-items:flex-start;gap:6px;padding:14px}
+  .grid .card .dot{display:none}
+  .grid .card .row{display:flex;align-items:center;width:100%;gap:8px}
+  .grid .num{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:800;color:var(--pink-light)}
+
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:16px;border:none;border-radius:16px;
+    font-family:'Unbounded',sans-serif;font-weight:600;font-size:14.5px;letter-spacing:.03em;
+    cursor:pointer;transition:.2s;text-decoration:none;
+  }
+  .btn-pink{
+    background:linear-gradient(100deg,var(--pink),var(--pink-dark));color:#fff;
+    box-shadow:0 10px 34px rgba(255,79,163,.40);
+  }
+  .btn-pink:active{transform:scale(.97)}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:12.5px;padding:13px}
+  .btn-ghost:active{transform:scale(.97)}
+
+  .bottom{flex:none;padding-top:16px;display:flex;flex-direction:column;gap:10px}
+
+  .price-box{
+    border-radius:22px;padding:20px;
+    background:linear-gradient(150deg,rgba(255,79,163,.16),rgba(255,255,255,.03) 60%);
+    border:1px solid rgba(255,79,163,.35);
+  }
+  .price-line{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;color:var(--muted)}
+  .price-line b{color:var(--text);font-weight:500}
+  .price-total{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed rgba(255,255,255,.2);margin-top:10px;padding-top:14px}
+  .price-total .lbl{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+  .price-total .val{font-family:'Unbounded',sans-serif;font-weight:800;font-size:30px;color:#fff}
+  .discount{color:var(--pink-light);font-weight:800}
+
+  .glow-btn{animation:glow 2.2s ease-in-out infinite}
+  @keyframes glow{0%,100%{box-shadow:0 10px 34px rgba(255,79,163,.35)}50%{box-shadow:0 10px 46px rgba(255,79,163,.65)}}
+
+  ::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="grain"></div>
+<div class="app">
+  <div class="progress"><div class="progress-bar" id="bar"></div></div>
+  <div id="screen"></div>
+  <div class="bottom" id="bottom"></div>
+</div>
+
+<script>
+const MASTER = "Tinaaaa00000"; // твой Telegram-username — куда уходит заявка
+const LENGTHS = [["1",200],["2",250],["3",300],["4",350],["5",400],["6",450],["7",500]];
+const BASE = [
+  {id:"man",   title:"Маникюр",            desc:"аппаратный маникюр без покрытия", price:100},
+  {id:"coat",  title:"Маникюр с покрытием",desc:"маникюр + гель-лак",               price:150},
+  {id:"ext",   title:"Наращивание",        desc:"выбери длину на следующем шаге",   price:null},
+];
+const DESIGN = [
+  {id:"medium", title:"MEDIUM", desc:"наклейки, стразы, глиттер", price:50},
+  {id:"hard",   title:"HARD",   desc:"фигурки, пигменты, стемпинг", price:100},
+];
+const state = {base:null, length:null, design:[]};
+let step = 0;
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) { tg.ready(); tg.expand(); }
+const userName = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "";
+const greeting = userName ? "Привет, " + userName + "!" : "Привет!";
+const isValentine = (new Date().getMonth() === 1 && new Date().getDate() === 14);
+
+const el = id => document.getElementById(id);
+function setProgress(p){ el("bar").style.width = p + "%"; }
+function clearBottom(){ el("bottom").innerHTML = ""; }
+
+function screenWelcome(){
+  setProgress(8); clearBottom();
+  el("screen").innerHTML = `
+    <div style="margin-top:8vh">
+      <div class="logo">Tina<br>Nails</div>
+      <div class="tagline">маникюр · Курган, Карла Маркса 95</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;margin-top:24px">
+      <div class="promo"><span class="heart">♥</span><span>Заходи — соберёт свой идеальный маникюр за <b>30 секунд</b> и узнаешь цену до записи</span></div>
+      ${isValentine ? `<div class="promo"><span class="heart">🔥</span><span>Только сегодня, <b>14 февраля</b>: скидка <b>−14% на всё</b> — она уже учтена в расчёте!</span></div>` : ""}
+    </div>`;
+  el("bottom").innerHTML = `<button class="btn btn-pink glow-btn" onclick="go(1)">Собрать маникюр →</button>`;
+}
+
+function screenBase(){
+  setProgress(30); clearBottom();
+  el("screen").innerHTML = `
+    <h2>Что делаем сегодня?</h2>
+    <div class="sub">Выбери основу — остальное подскажет калькулятор</div>
+    <div class="cards">${BASE.map(s => `
+      <div class="card ${state.base===s.id?"checked":""}" onclick="pickBase('${s.id}')">
+        <div class="dot"></div>
+        <div><div class="t">${s.title}</div><div class="d">${s.desc}</div></div>
+        <div class="p">${s.price ? s.price + " ₽" : "200–500 ₽"}</div>
+      </div>`).join("")}
+    </div>`;
+  el("bottom").innerHTML = `<button class="btn btn-pink ${state.base?"":"opacity"}" ${state.base?"":"disabled"} style="opacity:${state.base?1:.4}" onclick="go(2)">Дальше</button>`;
+}
+
+function pickBase(id){ state.base = id; if (id !== "ext") state.length = null; screenBase(); }
+
+function screenLength(){
+  setProgress(55); clearBottom();
+  el("screen").innerHTML = `
+    <h2>Какая длина?</h2>
+    <div class="sub">Цена зависит от длины наращивания</div>
+    <div class="grid">${LENGTHS.map(([n,p]) => `
+      <div class="card ${state.length===n?"checked":""}" onclick="pickLength('${n}')">
+        <div class="row"><div class="num">${n}</div><div class="p" style="margin-left:auto">${p} ₽</div></div>
+      </div>`).join("")}
+    </div>`;
+  el("bottom").innerHTML = `
+    <button class="btn btn-pink ${state.length?"":"opacity"}" ${state.length?"":"disabled"} style="opacity:${state.length?1:.4}" onclick="go(3)">Дальше</button>
+    <button class="btn btn-ghost" onclick="go(1)">← Назад</button>`;
+}
+
+function pickLength(n){ state.length = n; screenLength(); }
+
+function screenDesign(){
+  setProgress(78); clearBottom();
+  el("screen").innerHTML = `
+    <h2>Нужен дизайн?</h2>
+    <div class="sub">Можно выбрать один или оба — суммы сложатся</div>
+    <div class="cards">
+      <div class="card ${state.design.includes("none")?"checked":""}" onclick="pickDesign('none')">
+        <div class="dot"></div><div><div class="t">Без дизайна</div></div><div class="p">0 ₽</div>
+      </div>
+      ${DESIGN.map(d => `
+      <div class="card ${state.design.includes(d.id)?"checked":""}" onclick="pickDesign('${d.id}')">
+        <div class="dot"></div>
+        <div><div class="t">${d.title}</div><div class="d">${d.desc}</div></div>
+        <div class="p">+${d.price} ₽</div>
+      </div>`).join("")}
+    </div>`;
+  el("bottom").innerHTML = `
+    <button class="btn btn-pink glow-btn" onclick="go(4)">Рассчитать ✨</button>
+    <button class="btn btn-ghost" onclick="go(${state.base==="ext"?2:1})">← Назад</button>`;
+}
+
+function pickDesign(id){
+  if (id === "none") { state.design = ["none"]; }
+  else {
+    if (state.design.includes(id)) state.design = state.design.filter(x => x !== id);
+    else { state.design = state.design.filter(x => x !== "none"); state.design.push(id); }
+    if (!state.design.length) state.design = ["none"];
+  }
+  screenDesign();
+}
+
+function screenResult(){
+  setProgress(100); clearBottom();
+  const base = BASE.find(b => b.id === state.base);
+  const lines = [];
+  let sum = 0;
+  if (base.price){ lines.push([base.title, base.price]); sum += base.price; }
+  else {
+    const l = LENGTHS.find(x => x[0] === state.length);
+    lines.push(["Наращивание, длина " + state.length, l[1]]); sum += l[1];
+  }
+  if (!state.design.includes("none") && state.design.length){
+    DESIGN.forEach(d => { if (state.design.includes(d.id)){ lines.push(["Дизайн " + d.title, d.price]); sum += d.price; } });
+  }
+  let discount = 0;
+  let discText = "";
+  if (isValentine){ discount = Math.round(sum * 0.14); discText = "−14% (14 февраля)"; }
+  const total = sum - discount;
+  const chosen = lines.map(l => l[0]).join(" + ");
+  const msg = "Привет! Хочу записаться: " + chosen + ". По калькулятору выходит " + total + " ₽ 💅";
+  el("screen").innerHTML = `
+    <h2>Твой маникюр готов 💅</h2>
+    <div class="sub">Такой расчёт уже отправится мне в сообщении</div>
+    <div class="price-box">
+      ${lines.map(l => `<div class="price-line"><b>${l[0]}</b><span>${l[1]} ₽</span></div>`).join("")}
+      ${discount ? `<div class="price-line discount"><b>${discText}</b><span>−${discount} ₽</span></div>` : ""}
+      <div class="price-total"><span class="lbl">Итого</span><span class="val">${total} ₽</span></div>
+    </div>
+    ${!isValentine ? `<div class="promo"><span class="heart">−10%</span><span>Приведи подругу — и вы обе получите скидку 10% для каждой 💗</span></div>` : ""}`;
+  el("bottom").innerHTML = `
+    <a class="btn btn-pink glow-btn" href="https://t.me/${MASTER}?text=${encodeURIComponent(msg)}">Записаться в личку</a>
+    <button class="btn btn-ghost" onclick="restart()">← Пройти ещё раз</button>`;
+}
+
+function restart(){ state.base = null; state.length = null; state.design = []; step = 0; go(0); }
+
+const screens = [screenWelcome, screenBase, screenLength, screenDesign, screenResult];
+function go(n){
+  if (n === 2 && state.base !== "ext") n = 3;
+  step = n;
+  screens[n]();
+  const sc = el("screen");
+  sc.style.animation = "none"; void sc.offsetWidth; sc.style.animation = "";
+}
+
+screenWelcome();
+</script>
+</body>
+</html>
